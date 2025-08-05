@@ -1,5 +1,5 @@
 export const API_URL =
-  "http://localhost:5000"; /** https://nom-du-projet.up.railway.app */
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export const signUp = async (
   fullName: string,

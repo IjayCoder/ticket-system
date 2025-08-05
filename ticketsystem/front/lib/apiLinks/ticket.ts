@@ -1,8 +1,7 @@
 import { Priority, Ticket } from "@/types";
-import { error } from "console";
 
-export const API_URL = "http://localhost:5000";
-
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 export const CreateTicket = async (
   title: string,
   description: string,
