@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+ notifications    Notification[]
+  fullName    String
+  tickets       Ticket[]       @relation("clientTickets")
+  assignedTickets  Ticket[]  @relation("assignedDevTickets")
+  settings          UserSettings?
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+  DEV
+}
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  priority    Priority @default(LOW)
+  projectName String
+  assignedDevId Int?
+  assignedDev   User?    @relation("assignedDevTickets", fields: [assignedDevId], references: [id])
+  status      Status   @default(UNOPEN)
+  clientId    Int
+  client      User     @relation("clientTickets", fields: [clientId], references: [id])
+  createdAt   DateTime @default(now())
+  updateAt    DateTime?
+  resolvedAt  DateTime? 
+   notifications    Notification[]
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  UNOPEN
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    Int      // ✅ Corrigé ici (Int au lieu de String)
+  title     String
+  message   String
+  type      NotificationType
+  ticketId  Int?     // ✅ Corrigé ici aussi, car Ticket.id est un Int
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id])
+}
+
+
+enum NotificationType {
+  info
+  warning
+  success
+  error
+}
+
+
+model UserSettings {
+
+  id    Int   @id @default(autoincrement())
+  userId                    Int     @unique
+  receiveNotificationsEmail   Boolean @default(true)   
+  receiveTicketUpdateNotification Boolean @default(true)
+  user                   User    @relation(fields: [userId], references: [id])
+}

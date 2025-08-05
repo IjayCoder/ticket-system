@@ -1,0 +1,518 @@
+"use client";
+
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { TicketFilters } from "@/components/ticket-filters";
+import { PriorityBadge } from "@/components/priority-badge";
+import { Pagination } from "@/components/pagination";
+import { TicketDetailsModal } from "@/components/ticket-details-modal";
+import { TicketEditModal } from "@/components/ticket-edit-modal";
+import {
+  Bug,
+  Users,
+  Clock,
+  CheckCircle,
+  Edit,
+  Grid,
+  List,
+  Send,
+  EyeOff,
+  Delete,
+  DeleteIcon,
+  Trash2,
+} from "lucide-react";
+//import { mockUsers } from "@/lib/mock-data";
+import type {
+  TicketWithDetails,
+  PaginatedResponse,
+  Priority,
+  Status,
+  User,
+  Ticket,
+  Notification,
+} from "@/types";
+import { GetDashbordStats, GetTickets } from "@/lib/apiLinks/ticket";
+import { getInitials } from "@/lib/utils";
+import { NotificationModal } from "./notification-modal";
+import { toast } from "sonner";
+
+interface AdminDashboardProps {
+  user: User;
+}
+
+export function AdminDashboard({ user }: AdminDashboardProps) {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  //const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState<{
+    status?: Status;
+    priority?: Priority;
+  }>({});
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [notification, setNotification] = useState<Notification | null>(null);
+
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+
+  const [stats, setStats] = useState<Record<string, number>>({});
+  const [error, setError] = useState("");
+
+  /*const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "10",
+      });
+
+      if (filters.status) params.append("status", filters.status);
+      if (filters.priority) params.append("priority", filters.priority);
+
+      const response = await fetch(`/api/tickets?${params}`);
+      const data: PaginatedResponse<TicketWithDetails> = await response.json();
+
+      setTickets(data.data);
+      setTotalPages(data.pagination.totalPages);
+      setTotal(data.pagination.total);
+    } catch (error) {
+      console.error("Failed to fetch tickets:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, [currentPage, filters]);*/
+
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const { tickets, totalPages, total } = await GetTickets(page);
+      setTickets(tickets);
+      setTotalPages(totalPages);
+      setTotal(total);
+    } catch (error) {
+      toast.error("Error", { description: "Failed to fetch tickets" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, [page]);
+
+  const handleFilterChange = (key: string, value: string | undefined) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+    setPage(1);
+  };
+
+  const handleAssignTicket = async (ticketId: string, assignedToId: string) => {
+    try {
+      const response = await fetch(`/api/tickets/${ticketId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ assignedToId }),
+      });
+
+      if (response.ok) {
+        fetchTickets();
+        // Send notification to assigned dev
+        await sendNotificationToDev(assignedToId, ticketId);
+      }
+    } catch (error) {
+      toast.error("Error", { description: "Failed to fetch tickets assign" });
+    }
+  };
+
+  const sendNotificationToDev = async (devId: string, ticketId: string) => {
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: devId,
+          title: "New ticket assigned",
+          message: "You have been assigned a new ticket",
+          type: "info",
+          ticketId,
+        }),
+      });
+    } catch (error) {
+      toast.error("Error", { description: "Failed to send notification" });
+    }
+  };
+
+  /* const getStatusCounts = () => {
+    const counts = { open: 0, inProgress: 0, resolved: 0 };
+    tickets.forEach((t) => {
+      if (t.status === "OPEN") counts.open++;
+      else if (t.status === "IN_PROGRESS") counts.inProgress++;
+      else if (t.status === "RESOLVED") counts.resolved++;
+    });
+    return counts;
+  };
+
+  const statusCounts = getStatusCounts();
+  //const devUsers = mockUsers.filter((u) => u.role === "Dev");*/
+
+  useEffect(() => {
+    const getStatusCounts = async () => {
+      try {
+        const result = await GetDashbordStats();
+        setStats(result);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to load stats");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getStatusCounts();
+  }, []);
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+  const initials = (n: string) =>
+    n
+      .split(" ")
+      .map((s) => s[0])
+      .join("")
+      .toUpperCase();
+
+  const handleTicketClick = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setDetailsModalOpen(true);
+  };
+
+  const handleEditClick = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setEditModalOpen(true);
+  };
+
+  const handleOpenNotification = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setNotificationModalOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 sm:p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/2 sm:w-1/4" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded" />
+            ))}
+          </div>
+          <div className="h-96 bg-gray-200 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Supervise tickets and manage assignments
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <StatCard title="Total Tickets" value={stats.total} icon={<Bug />} />
+        <StatCard
+          title="Unopen"
+          value={stats.unopen}
+          icon={<EyeOff className="text-blue-500" />}
+          valueClass="text-red-600"
+        />
+        <StatCard
+          title="Open"
+          value={stats.open}
+          icon={<Clock className="text-red-500" />}
+          valueClass="text-red-600"
+        />
+        <StatCard
+          title="In Progress"
+          value={stats.in_progress}
+          icon={<Users className="text-yellow-500" />}
+          valueClass="text-yellow-600"
+        />
+        <StatCard
+          title="Resolved"
+          value={stats.resolved}
+          icon={<CheckCircle className="text-green-500" />}
+          valueClass="text-green-600"
+        />
+      </div>
+
+      {/* Filters */}
+      <TicketFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
+
+      {/* View toggle */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant={viewMode === "table" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("table")}
+          >
+            <List className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Table</span>
+          </Button>
+          <Button
+            variant={viewMode === "cards" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("cards")}
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Cards</span>
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Showing {tickets.length} of {total} tickets
+        </p>
+      </div>
+
+      {/* Tickets Table */}
+      <Card>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle>All Tickets</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Title</TableHead>
+                  <TableHead className="min-w-[120px]">Created By</TableHead>
+                  <TableHead className="min-w-[140px]">Assigned To</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="min-w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tickets.map((ticket) => (
+                  <TableRow key={ticket.id}>
+                    <TableCell>
+                      <div>
+                        <button
+                          onClick={() => handleTicketClick(ticket)}
+                          className="font-medium hover:text-primary cursor-pointer text-left"
+                        >
+                          {ticket.title}
+                        </button>
+                        <div className="text-sm text-muted-foreground line-clamp-1">
+                          {ticket.description}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {getInitials(ticket.client.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">
+                          {ticket.client.fullName}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={ticket.assignedDev?.fullName}
+                        onValueChange={(value) =>
+                          handleAssignTicket(String(ticket.id), value)
+                        }
+                      >
+                        <div className="w-32">
+                          <div>
+                            <div className="flex items-center space-x-1">
+                              <Avatar className="h-4 w-4">
+                                <AvatarFallback className="text-xs">
+                                  {ticket.assignedDev?.fullName}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs">
+                                {ticket.assignedDev?.fullName}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <SelectContent>
+                          {/* {devUsers.map((dev) => (
+                            <SelectItem key={dev.id} value={dev.id}>
+                              <div className="flex items-center space-x-2">
+                                <Avatar className="h-4 w-4">
+                                  <AvatarFallback className="text-xs">
+                                    {initials(dev.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{dev.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))} */}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{ticket.projectName}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          ticket.status === "OPEN"
+                            ? "destructive"
+                            : ticket.status === "IN_PROGRESS"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {ticket.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <PriorityBadge priority={ticket.priority} />
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatDate(ticket.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenNotification(ticket)}
+                          title="Send notification to assigned dev"
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" title="delete ticket">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
+
+      <TicketDetailsModal
+        ticket={selectedTicket}
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+      />
+      <TicketEditModal
+        ticket={selectedTicket}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onTicketUpdated={fetchTickets}
+      />
+
+      <NotificationModal
+        ticket={selectedTicket}
+        open={notificationModalOpen}
+        onOpenSend={setNotificationModalOpen}
+        user={user}
+      />
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  icon,
+  valueClass = "",
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  valueClass?: string;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-xs sm:text-sm font-medium">
+          {title}
+        </CardTitle>
+        <div className="h-4 w-4 sm:h-5 sm:w-5">{icon}</div>
+      </CardHeader>
+      <CardContent>
+        <div className={`text-xl sm:text-2xl font-bold ${valueClass}`}>
+          {value}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
