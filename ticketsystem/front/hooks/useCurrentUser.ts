@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Dashboard } from "@/components/dashboard/dashboard";
-import { User } from "@/types";
 import { GetCurrentUser } from "@/lib/apiLinks/user";
-import { HashLoader } from "react-spinners";
+import { User } from "@/types";
 
-export default function DashboardPage() {
+export const useCurrentUser = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,20 +22,13 @@ export default function DashboardPage() {
       } catch (err) {
         console.error("Erreur récupération utilisateur", err);
         router.push("/login");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
-  }, []);
+  }, [router]);
 
-  if (!user)
-    return (
-      <>
-        <div className="h-screen flex justify-center items-center">
-          <HashLoader size={50} />
-        </div>
-      </>
-    );
-
-  return <Dashboard user={user} />;
-}
+  return { user, loading };
+};

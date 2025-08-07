@@ -1,5 +1,5 @@
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const GetSettings = async () => {
   const res = await fetch(`${API_URL}/api/settings`, {
     method: "GET",

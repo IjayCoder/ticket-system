@@ -1,10 +1,10 @@
 "use client";
 
-import { AdminDashboard } from "@/components/admin-dashboard";
-import { UserDashboard } from "@/components/user-dashboard";
-import { DevDashboard } from "@/components/dev-dashboard";
+import { AdminDashboard } from "@/components/dashboard/adminDashboard/admin-dashboard";
+import { UserDashboard } from "@/components/dashboard/userDashboard/user-dashboard";
+import { DevDashboard } from "@/components/dashboard/devDashbord/dev-dashboard";
 import { UserMenu } from "@/components/user-menu";
-import { NotificationsDropdown } from "@/components/notifications-dropdown";
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
 import type { User } from "@/types";
 
 interface DashboardProps {

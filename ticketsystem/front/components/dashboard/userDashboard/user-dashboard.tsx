@@ -1,127 +1,46 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { TicketForm } from "@/components/ticket-form";
+import { TicketForm } from "@/components/ticket/ticket-form";
 import { StatusBadge } from "@/components/status-badge";
 import { PriorityBadge } from "@/components/priority-badge";
-import { TicketDetailsModal } from "@/components/ticket-details-modal";
+import { TicketDetailsModal } from "@/components/ticket/ticket-details-modal";
 import { Bug, Clock, CheckCircle, Edit, Trash2 } from "lucide-react";
-import type {
-  TicketWithDetails,
-  PaginatedResponse,
-  User,
-  Ticket,
-} from "@/types";
-import {
-  DeleteTicket,
-  GetDashbordStats,
-  GetMyTickets,
-} from "@/lib/apiLinks/ticket";
-import { getInitials } from "@/lib/utils";
-import { TicketEditModal } from "./ticket-edit-modal";
-import { Pagination } from "./pagination";
-import { toast } from "sonner";
+import type { User } from "@/types";
+
+import { formatDate, getInitials } from "@/lib/utils";
+import { TicketEditModal } from "@/components/ticket/ticket-edit-modal";
+import { Pagination } from "@/components/pagination";
+import { useUserDashboard } from "@/hooks/useUserDashboard";
 
 interface UserDashboardProps {
   user: User;
 }
 
 export function UserDashboard({ user }: UserDashboardProps) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Record<string, number>>({});
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [error, setError] = useState("");
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const { tickets, totalPages, total } = await GetMyTickets(page);
-      setTickets(tickets);
-      setTotalPages(totalPages);
-      setTotal(total);
-    } catch (error) {
-      toast.error("Error", {
-        description: "Failed to fetch tickets",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTickets();
-  }, [page]);
-
-  /* useEffect(() => {
-    const interval = setInterval(() => {
-      fetchTickets();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);*/
-
-  const handleDeleteTicket = async (id: number) => {
-    try {
-      await DeleteTicket(id);
-      toast.success("Deleted", {
-        description: "Ticket deleted!!",
-      });
-      setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
-    } catch (error) {
-      toast.error("Error", {
-        description: "Failed to delete tickets",
-      });
-    }
-  };
-
-  useEffect(() => {
-    const getStatusCounts = async () => {
-      try {
-        const result = await GetDashbordStats();
-        setStats(result);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Failed to load stats");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getStatusCounts();
-  }, []);
-
-  const handleTicketUpdated = () => {
-    fetchTickets(); // ou toute autre logique
-  };
-
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-  const handleTicketClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setDetailsModalOpen(true);
-  };
-
-  const handleEdit = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setEditModalOpen(true);
-  };
+  const {
+    tickets,
+    loading,
+    stats,
+    totalPages,
+    selectedTicket,
+    setSelectedTicket,
+    detailsModalOpen,
+    setDetailsModalOpen,
+    editModalOpen,
+    setEditModalOpen,
+    handleDeleteTicket,
+    handleTicketClick,
+    handleTicketUpdated,
+    handleEdit,
+    fetchTickets,
+  } = useUserDashboard(page);
 
   if (loading) {
     return (

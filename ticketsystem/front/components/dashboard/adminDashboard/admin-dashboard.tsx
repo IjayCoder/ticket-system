@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,226 +13,61 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { TicketFilters } from "@/components/ticket-filters";
+import { Select, SelectContent } from "@/components/ui/select";
+import { TicketFilters } from "@/components/ticket/ticket-filters";
 import { PriorityBadge } from "@/components/priority-badge";
 import { Pagination } from "@/components/pagination";
-import { TicketDetailsModal } from "@/components/ticket-details-modal";
-import { TicketEditModal } from "@/components/ticket-edit-modal";
+import { TicketDetailsModal } from "@/components/ticket/ticket-details-modal";
+import { TicketEditModal } from "@/components/ticket/ticket-edit-modal";
 import {
   Bug,
   Users,
   Clock,
   CheckCircle,
-  Edit,
   Grid,
   List,
   Send,
   EyeOff,
-  Delete,
-  DeleteIcon,
   Trash2,
 } from "lucide-react";
-//import { mockUsers } from "@/lib/mock-data";
-import type {
-  TicketWithDetails,
-  PaginatedResponse,
-  Priority,
-  Status,
-  User,
-  Ticket,
-  Notification,
-} from "@/types";
-import { GetDashbordStats, GetTickets } from "@/lib/apiLinks/ticket";
-import { getInitials } from "@/lib/utils";
-import { NotificationModal } from "./notification-modal";
-import { toast } from "sonner";
+import type { User } from "@/types";
+import { formatDate, getInitials } from "@/lib/utils";
+import { NotificationModal } from "../../notifications/notification-modal";
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 
 interface AdminDashboardProps {
   user: User;
 }
 
 export function AdminDashboard({ user }: AdminDashboardProps) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  //const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState<{
-    status?: Status;
-    priority?: Priority;
-  }>({});
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [notification, setNotification] = useState<Notification | null>(null);
-
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-
-  const [stats, setStats] = useState<Record<string, number>>({});
-  const [error, setError] = useState("");
-
-  /*const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "10",
-      });
-
-      if (filters.status) params.append("status", filters.status);
-      if (filters.priority) params.append("priority", filters.priority);
-
-      const response = await fetch(`/api/tickets?${params}`);
-      const data: PaginatedResponse<TicketWithDetails> = await response.json();
-
-      setTickets(data.data);
-      setTotalPages(data.pagination.totalPages);
-      setTotal(data.pagination.total);
-    } catch (error) {
-      console.error("Failed to fetch tickets:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTickets();
-  }, [currentPage, filters]);*/
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const { tickets, totalPages, total } = await GetTickets(page);
-      setTickets(tickets);
-      setTotalPages(totalPages);
-      setTotal(total);
-    } catch (error) {
-      toast.error("Error", { description: "Failed to fetch tickets" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTickets();
-  }, [page]);
-
-  const handleFilterChange = (key: string, value: string | undefined) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({});
-    setPage(1);
-  };
-
-  const handleAssignTicket = async (ticketId: string, assignedToId: string) => {
-    try {
-      const response = await fetch(`/api/tickets/${ticketId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ assignedToId }),
-      });
-
-      if (response.ok) {
-        fetchTickets();
-        // Send notification to assigned dev
-        await sendNotificationToDev(assignedToId, ticketId);
-      }
-    } catch (error) {
-      toast.error("Error", { description: "Failed to fetch tickets assign" });
-    }
-  };
-
-  const sendNotificationToDev = async (devId: string, ticketId: string) => {
-    try {
-      await fetch("/api/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: devId,
-          title: "New ticket assigned",
-          message: "You have been assigned a new ticket",
-          type: "info",
-          ticketId,
-        }),
-      });
-    } catch (error) {
-      toast.error("Error", { description: "Failed to send notification" });
-    }
-  };
-
-  /* const getStatusCounts = () => {
-    const counts = { open: 0, inProgress: 0, resolved: 0 };
-    tickets.forEach((t) => {
-      if (t.status === "OPEN") counts.open++;
-      else if (t.status === "IN_PROGRESS") counts.inProgress++;
-      else if (t.status === "RESOLVED") counts.resolved++;
-    });
-    return counts;
-  };
-
-  const statusCounts = getStatusCounts();
-  //const devUsers = mockUsers.filter((u) => u.role === "Dev");*/
-
-  useEffect(() => {
-    const getStatusCounts = async () => {
-      try {
-        const result = await GetDashbordStats();
-        setStats(result);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Failed to load stats");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getStatusCounts();
-  }, []);
-
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-  const initials = (n: string) =>
-    n
-      .split(" ")
-      .map((s) => s[0])
-      .join("")
-      .toUpperCase();
-
-  const handleTicketClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setDetailsModalOpen(true);
-  };
-
-  const handleEditClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setEditModalOpen(true);
-  };
-
-  const handleOpenNotification = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setNotificationModalOpen(true);
-  };
+  const {
+    tickets,
+    stats,
+    loading,
+    error,
+    viewMode,
+    setViewMode,
+    filters,
+    handleFilterChange,
+    handleClearFilters,
+    selectedTicket,
+    setSelectedTicket,
+    detailsModalOpen,
+    setDetailsModalOpen,
+    editModalOpen,
+    setEditModalOpen,
+    notificationModalOpen,
+    setNotificationModalOpen,
+    page,
+    setPage,
+    totalPages,
+    total,
+    handleTicketClick,
+    handleEditClick,
+    handleOpenNotification,
+    handleAssignTicket,
+    fetchTickets,
+  } = useAdminDashboard(user);
 
   if (loading) {
     return (
@@ -386,7 +220,9 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                             <div className="flex items-center space-x-1">
                               <Avatar className="h-4 w-4">
                                 <AvatarFallback className="text-xs">
-                                  {ticket.assignedDev?.fullName}
+                                  {getInitials(
+                                    ticket.assignedDev?.fullName || ""
+                                  )}
                                 </AvatarFallback>
                               </Avatar>
                               <span className="text-xs">
@@ -516,3 +352,4 @@ function StatCard({
     </Card>
   );
 }
+("");

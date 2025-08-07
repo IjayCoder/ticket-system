@@ -48,38 +48,6 @@ export function TicketForm({ onTicketCreated }: TicketFormProps) {
   const [devs, setDevs] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  /*const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/tickets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        setFormData({
-          title: "",
-          description: "",
-          priority: "MEDIUM",
-          status: "OPEN",
-          projectId: "",
-          assignedToId: "",
-        });
-        setOpen(false);
-        onTicketCreated();
-      }
-    } catch (error) {
-      console.error("Failed to create ticket:", error);
-    } finally {
-      setLoading(false);
-    }
-  };*/
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);

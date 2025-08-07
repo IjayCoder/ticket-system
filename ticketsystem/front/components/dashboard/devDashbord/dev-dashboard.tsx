@@ -21,11 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TicketFilters } from "@/components/ticket-filters";
+import { TicketFilters } from "@/components/ticket/ticket-filters";
 import { PriorityBadge } from "@/components/priority-badge";
 import { Pagination } from "@/components/pagination";
-import { TicketDetailsModal } from "@/components/ticket-details-modal";
-import { TicketEditModal } from "@/components/ticket-edit-modal";
+import { TicketDetailsModal } from "@/components/ticket/ticket-details-modal";
+import { TicketEditModal } from "@/components/ticket/ticket-edit-modal";
 import { Clock, CheckCircle, Edit, Code, Send } from "lucide-react";
 import type {
   TicketWithDetails,
@@ -41,162 +41,40 @@ import {
   UpdateStatus,
 } from "@/lib/apiLinks/ticket";
 import { getInitials } from "@/lib/utils";
-import { NotificationModal } from "./notification-modal";
+import { NotificationModal } from "../../notifications/notification-modal";
 import { toast } from "sonner";
+import { useDevDashboard } from "@/hooks/useDevDashboard";
 
 interface DevDashboardProps {
   user: User;
 }
 
 export function DevDashboard({ user }: DevDashboardProps) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  //const [currentPage, setCurrentPage] = useState(1);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  //const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState<{
-    status?: Status;
-    priority?: Priority;
-  }>({});
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [stats, setStats] = useState<Record<string, number>>({});
-  const [error, setError] = useState("");
-  const [notification, setNotification] = useState<Notification | null>(null);
-  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-
-  /* const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "10",
-        assignedToId: user.id, // Only show tickets assigned to this dev
-      });
-
-      if (filters.status) params.append("status", filters.status);
-      if (filters.priority) params.append("priority", filters.priority);
-
-      const response = await fetch(`/api/tickets?${params}`);
-      const data: PaginatedResponse<TicketWithDetails> = await response.json();
-
-      setTickets(data.data);
-      setTotalPages(data.pagination.totalPages);
-      setTotal(data.pagination.total);
-    } catch (error) {
-      console.error("Failed to fetch tickets:", error);
-    } finally {
-      setLoading(false);
-    }
-  };*/
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const { tickets, totalPages, total } = await GetMyTickets(page);
-      setTickets(tickets);
-      setTotalPages(totalPages);
-      setTotal(total);
-    } catch (error) {
-      toast.error("Error", {
-        description: "Failed to fetch tickets",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTickets();
-  }, [page]);
-
-  /*useEffect(() => {
-    fetchTickets();
-  }, [currentPage, filters, user.id]);*/
-
-  const handleFilterChange = (key: string, value: string | undefined) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setPage(1);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({});
-    setPage(1);
-  };
-
-  const handleStatusUpdate = async (ticketId: number, newStatus: Status) => {
-    try {
-      await UpdateStatus(ticketId, newStatus);
-      toast.success("Changed", {
-        description: "Tickets status changed!! ",
-      });
-    } catch (error) {
-      toast.error("Error", {
-        description: "Failed to update ticket status",
-      });
-    }
-  };
-
-  /* const getStatusCounts = () => {
-    const counts = { open: 0, inProgress: 0, resolved: 0 };
-    tickets.forEach((t) => {
-      if (t.status === "OPEN") counts.open++;
-      else if (t.status === " IN_PROGRESS ") counts.inProgress++;
-      else if (t.status === "RESOLVED") counts.resolved++;
-    });
-    return counts;
-  };
-
-  const statusCounts = getStatusCounts();*/
-
-  useEffect(() => {
-    const getStatusCounts = async () => {
-      try {
-        const result = await GetDashbordStats();
-        setStats(result);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Failed to load stats");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getStatusCounts();
-  }, []);
-
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-
-  /*const initials = (n: string) =>
-    n
-      .split(" ")
-      .map((s) => s[0])
-      .join("")
-      .toUpperCase();*/
-
-  const handleTicketClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setDetailsModalOpen(true);
-  };
-
-  const handleEditClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setEditModalOpen(true);
-  };
-
-  const handleOpenNotification = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-    setNotificationModalOpen(true);
-  };
+  const {
+    tickets,
+    page,
+    setPage,
+    totalPages,
+    filters,
+    stats,
+    loading,
+    selectedTicket,
+    setSelectedTicket,
+    notificationModalOpen,
+    setNotificationModalOpen,
+    detailsModalOpen,
+    setDetailsModalOpen,
+    editModalOpen,
+    setEditModalOpen,
+    handleStatusUpdate,
+    handleFilterChange,
+    handleClearFilters,
+    handleEditClick,
+    formatDate,
+    handleTicketClick,
+    handleOpenNotification,
+    fetchTickets,
+  } = useDevDashboard(user);
 
   if (loading) {
     return (

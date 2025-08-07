@@ -15,87 +15,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Bug, Eye, EyeOff } from "lucide-react";
 import { signUp } from "@/lib/apiLinks/auth";
+import { useRegister } from "@/hooks/useRegister";
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
-
-  /*const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-        }),
-      });
-
-      if (response.ok) {
-        router.push("/");
-        router.refresh();
-      } else {
-        const data = await response.json();
-        setError(data.error || "Registration failed");
-      }
-    } catch (error) {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };*/
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const { fullName, email, password, confirmPassword } = formData;
-
-    if (password !== confirmPassword) {
-      console.log("Passwords do not match");
-      return;
-    }
-    signUp(fullName, email, password)
-      .then((data) => {
-        console.log("successful register", data);
-        router.push("/login");
-      })
-      .catch((err) => console.log("registering failed", err.message))
-      .finally(() => setLoading(false));
-  };
+  const {
+    formData,
+    setFormData,
+    showPassword,
+    setShowPassword,
+    loading,
+    error,
+    handleRegister,
+  } = useRegister();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -112,7 +47,7 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>

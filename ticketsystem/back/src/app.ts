@@ -12,7 +12,10 @@ import cookieParser from "cookie-parser";
 //middlewares
 app.use(express.json());
 app.use(
-  cors({ credentials: true, origin: "https://ijayticketsystem.web.app" })
+  cors({
+    credentials: true,
+    origin: "https://ijayticketsystem.web.app",
+  })
 );
 app.use(cookieParser());
 

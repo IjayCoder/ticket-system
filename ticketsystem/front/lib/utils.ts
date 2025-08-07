@@ -11,3 +11,10 @@ export function getInitials(fullName: string): string {
   if (names.length === 1) return names[0][0].toUpperCase();
   return (names[0][0] + names[names.length - 1][0]).toUpperCase();
 }
+
+export const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });

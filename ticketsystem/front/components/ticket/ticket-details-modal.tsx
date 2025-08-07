@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/status-badge";
 import { PriorityBadge } from "@/components/priority-badge";
-import { TicketEditModal } from "@/components/ticket-edit-modal";
+import { TicketEditModal } from "@/components/ticket/ticket-edit-modal";
 import {
   Calendar,
   User,
@@ -53,14 +53,6 @@ export function TicketDetailsModal({
       minute: "2-digit",
     });
   };
-
-  /* const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };*/
 
   const getDaysSinceCreated = () => {
     const created = new Date(ticket.createdAt);

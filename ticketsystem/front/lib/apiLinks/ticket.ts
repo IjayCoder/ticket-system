@@ -1,7 +1,7 @@
 import { Priority, Ticket } from "@/types";
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const CreateTicket = async (
   title: string,
   description: string,
@@ -32,20 +32,6 @@ export const CreateTicket = async (
   console.log(data);
   return data;
 };
-
-/*export const GetTickets = async (page = 1, limit = 10): Promise<Ticket[]> => {
-  const res = await fetch(`${API_URL}/api/ticket?page=${page}&limit=${limit}`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!res.ok) {
-    throw new Error(" Error when getting the tickets");
-  }
-
-  const data = await res.json();
-  return data.tickets;
-};*/
 
 export const GetTickets = async (page = 1, limit = 10) => {
   const res = await fetch(`${API_URL}/api/ticket?page=${page}&limit=${limit}`, {

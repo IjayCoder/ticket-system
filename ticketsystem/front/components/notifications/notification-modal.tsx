@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { Notification, Ticket, User } from "@/types";
-import { SendNotification } from "@/lib/apiLinks/notification";
-import { toast } from "sonner";
+import { useNotificationForm } from "@/hooks/useNotificationForm";
 
 interface NotificationModalProps {
   user: User;
@@ -35,64 +33,8 @@ export function NotificationModal({
   open,
   onOpenSend,
 }: NotificationModalProps) {
-  const [formData, setFormData] = useState({
-    title: "",
-    message: "",
-    type: "info" as Notification["type"],
-    recipientType: "" as "CLIENT" | "DEV" | "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!ticket) return;
-
-    if (user.role === "DEV" && ticket.client?.id) {
-      setFormData((prev) => ({ ...prev, recipientType: "CLIENT" }));
-    }
-  }, [ticket, user]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticket) return;
-
-    try {
-      setLoading(true);
-      setError("");
-
-      if (user.role === "DEV") {
-        await SendNotification(
-          formData.title,
-          formData.message,
-          formData.type,
-          ticket.id
-        );
-
-        toast.success("Sent", { description: "message sent!!" });
-      } else if (user.role === "ADMIN") {
-        if (!formData.recipientType) {
-          setError("Receiver need to be set");
-          return;
-        }
-
-        await SendNotification(
-          formData.title,
-          formData.message,
-          formData.type,
-          ticket.id,
-          formData.recipientType
-        );
-      }
-
-      onOpenSend(false);
-      setFormData({ title: "", message: "", type: "info", recipientType: "" });
-    } catch (err) {
-      toast.error("Error", { description: "message sending failed!!" });
-      setError("Error occurs when sending a message");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { formData, handleChange, handleSubmit, loading, error } =
+    useNotificationForm(user, ticket, () => onOpenSend(false));
 
   if (!ticket) return null;
 
@@ -110,9 +52,7 @@ export function NotificationModal({
             <Input
               type="text"
               value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
+              onChange={(e) => handleChange("title", e.target.value)}
               required
             />
           </div>
@@ -122,9 +62,7 @@ export function NotificationModal({
             <Label>Message</Label>
             <Textarea
               value={formData.message}
-              onChange={(e) =>
-                setFormData({ ...formData, message: e.target.value })
-              }
+              onChange={(e) => handleChange("message", e.target.value)}
               rows={4}
               required
             />
@@ -136,7 +74,7 @@ export function NotificationModal({
             <Select
               value={formData.type}
               onValueChange={(value: Notification["type"]) =>
-                setFormData({ ...formData, type: value })
+                handleChange("type", value)
               }
             >
               <SelectTrigger>
@@ -158,7 +96,7 @@ export function NotificationModal({
               <Select
                 value={formData.recipientType}
                 onValueChange={(value: "CLIENT" | "DEV") =>
-                  setFormData({ ...formData, recipientType: value })
+                  handleChange("recipientType", value)
                 }
               >
                 <SelectTrigger>
