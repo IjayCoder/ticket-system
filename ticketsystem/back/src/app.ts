@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
 import csrfRoutes from "./routes/csrf.routes";
 import authRoutes from "./routes/auth.routes";
@@ -9,6 +10,8 @@ import ticketRoutes from "./routes/ticket.routes";
 import notificationRoutes from "./routes/notification.routes";
 import settingsRoutes from "./routes/settings.routes";
 import userRoutes from "./routes/user.routes";
+
+dotenv.config();
 
 import { csrfProtection } from "./middlewares/csrf.middleware";
 
