@@ -30,14 +30,20 @@ app.use(helmet());
 app.use(cookieParser());
 
 //  Route to retrieve the CSRF token (accessible without protection).
-app.use("/api", csrfRoutes);
+//app.use("/api", csrfRoutes);
 
 // Apply CSRF protection to all sensitive routes.
-app.use("/api/auth", csrfProtection, authRoutes);
+/*app.use("/api/auth", csrfProtection, authRoutes);
 app.use("/api/user", csrfProtection, userRoutes);
 app.use("/api/ticket", csrfProtection, ticketRoutes);
 app.use("/api/notification", csrfProtection, notificationRoutes);
-app.use("/api/settings", csrfProtection, settingsRoutes);
+app.use("/api/settings", csrfProtection, settingsRoutes);*/
+
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/ticket", ticketRoutes);
+app.use("/api/notification", notificationRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // 404 handler
 app.use("/", (req, res) => {
