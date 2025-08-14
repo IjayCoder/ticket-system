@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: "https://ijayticketsystem.web.app",
+    origin: process.env.CLIENT_URL,
   })
 );
 
@@ -30,7 +30,7 @@ app.use(helmet());
 app.use(cookieParser());
 
 //  Route to retrieve the CSRF token (accessible without protection).
-//app.use("/api", csrfRoutes);
+app.use("/api", csrfRoutes);
 
 // Apply CSRF protection to all sensitive routes.
 /*app.use("/api/auth", csrfProtection, authRoutes);

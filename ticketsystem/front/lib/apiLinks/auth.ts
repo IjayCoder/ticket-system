@@ -1,16 +1,16 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-let csrfToken: string | null = null;
+//let csrfToken: string | null = null;
 
 // Récupère le CSRF token depuis le backend
-export const getCsrfToken = async () => {
+/*export const getCsrfToken = async () => {
   const res = await fetch(`${API_URL}/api/csrf-token`, {
     credentials: "include",
   });
   if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
   const data = await res.json();
   csrfToken = data.csrfToken;
-};
+};*/
 
 export const signUp = async (
   fullName: string,
@@ -18,13 +18,12 @@ export const signUp = async (
 
   password: string
 ) => {
-  if (!csrfToken) await getCsrfToken();
+  //  if (!csrfToken) await getCsrfToken(); "x-csrf-token": csrfToken as string
 
   const res = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     credentials: "include",
 
@@ -45,12 +44,10 @@ export const Login = async (
 
   password: string
 ) => {
-  if (!csrfToken) await getCsrfToken();
   const res = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({ email, password }),
     credentials: "include",
@@ -66,11 +63,9 @@ export const Login = async (
 };
 
 export const Logout = async () => {
-  if (!csrfToken) await getCsrfToken();
   const res = await fetch(`${API_URL}/api/auth/logout`, {
     method: "POST",
     credentials: "include",
-    headers: { "x-csrf-token": csrfToken as string },
   });
 
   if (!res.ok) {

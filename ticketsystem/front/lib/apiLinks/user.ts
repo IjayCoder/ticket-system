@@ -2,7 +2,7 @@ import { User } from "@/types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-let csrfToken: string | null = null;
+/*let csrfToken: string | null = null;
 
 // Récupère le CSRF token depuis le backend
 export const getCsrfToken = async () => {
@@ -12,7 +12,7 @@ export const getCsrfToken = async () => {
   if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
   const data = await res.json();
   csrfToken = data.csrfToken;
-};
+};*/
 
 export const GetProfile = async () => {
   const res = await fetch(`${API_URL}/api`);
@@ -52,14 +52,11 @@ export const UpdateProfile = async ({
   email: string;
   fullName: string;
 }) => {
-  if (!csrfToken) await getCsrfToken();
-
   const res = await fetch(`${API_URL}/api/user/${id}`, {
     method: "PATCH",
     credentials: "include",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({ email, fullName }),
   });

@@ -1,6 +1,6 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-let csrfToken: string | null = null;
+/*let csrfToken: string | null = null;
 
 // Récupère le CSRF token depuis le backend
 export const getCsrfToken = async () => {
@@ -10,7 +10,7 @@ export const getCsrfToken = async () => {
   if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
   const data = await res.json();
   csrfToken = data.csrfToken;
-};
+};*/
 
 export const SendNotification = async (
   title: string,
@@ -19,13 +19,12 @@ export const SendNotification = async (
   ticketId: string,
   recipientType?: "CLIENT" | "DEV"
 ) => {
-  if (!csrfToken) await getCsrfToken();
+  //if (!csrfToken) await getCsrfToken(); "x-csrf-token": csrfToken as string,
 
   const res = await fetch(`${API_URL}/api/notification`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({ title, message, type, ticketId, recipientType }),
     credentials: "include",
@@ -54,21 +53,15 @@ export const GetNotification = async () => {
 };
 
 export const MarkNotificationAsRead = async (id: string) => {
-  if (!csrfToken) await getCsrfToken();
-
   await fetch(`${API_URL}/api/notification/${id}/read`, {
     method: "PATCH",
     credentials: "include",
-    headers: { "x-csrf-token": csrfToken as string },
   });
 };
 
 export const MarkAllNotificationsAsRead = async () => {
-  if (!csrfToken) await getCsrfToken();
-
   await fetch(`${API_URL}/api/notification/read-all`, {
     method: "PATCH",
     credentials: "include",
-    headers: { "x-csrf-token": csrfToken as string },
   });
 };

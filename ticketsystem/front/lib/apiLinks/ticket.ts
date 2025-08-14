@@ -2,7 +2,7 @@ import { Priority, Ticket } from "@/types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-let csrfToken: string | null = null;
+/*let csrfToken: string | null = null;
 
 // Récupère le CSRF token depuis le backend
 export const getCsrfToken = async () => {
@@ -12,7 +12,7 @@ export const getCsrfToken = async () => {
   if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
   const data = await res.json();
   csrfToken = data.csrfToken;
-};
+};*/
 
 export const CreateTicket = async (
   title: string,
@@ -22,13 +22,12 @@ export const CreateTicket = async (
   assignedDevId: string,
   clientId: string
 ) => {
-  if (!csrfToken) await getCsrfToken();
+  //if (!csrfToken) await getCsrfToken();
 
   const res = await fetch(`${API_URL}/api/ticket`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({
       title,
@@ -125,13 +124,10 @@ export const UpdateTicket = async ({
   assignedDev: string;
   clientId: string;
 }) => {
-  if (!csrfToken) await getCsrfToken();
-
   const res = await fetch(`${API_URL}/api/ticket/${id}`, {
     method: "PATCH",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({
       title,
@@ -154,14 +150,11 @@ export const UpdateTicket = async ({
 };
 
 export const UpdateStatus = async (id: string, status: string) => {
-  if (!csrfToken) await getCsrfToken();
-
   const res = await fetch(`${API_URL}/api/ticket/status/${id}`, {
     method: "PUT",
     credentials: "include",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken as string,
     },
     body: JSON.stringify({ status }),
   });
@@ -176,12 +169,9 @@ export const UpdateStatus = async (id: string, status: string) => {
 export const DeleteTicket = async (
   id: string
 ): Promise<{ message: string }> => {
-  if (!csrfToken) await getCsrfToken();
-
   const res = await fetch(`${API_URL}/api/ticket/${id}`, {
     method: "DELETE",
     credentials: "include",
-    headers: { "x-csrf-token": csrfToken as string },
   });
 
   if (!res.ok) {
