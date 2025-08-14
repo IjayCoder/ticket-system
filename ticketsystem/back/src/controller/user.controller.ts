@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 
 interface CustomRequest extends Request {
-  user?: { id: number; role: string };
+  user?: { id: string; role: string };
 }
 
 const prisma = new PrismaClient();
@@ -12,7 +12,7 @@ export const getUserProfile = async (req: CustomRequest, res: Response) => {
     const { id } = req.user!;
 
     const Profile = await prisma.user.findUnique({
-      where: { id: Number(id) },
+      where: { id: id },
       select: {
         id: true,
         fullName: true,
@@ -63,7 +63,7 @@ export const UpdateUserProfile = async (req: CustomRequest, res: Response) => {
     const { email, fullName } = req.body;
 
     const UpdateProfile = await prisma.user.update({
-      where: { id: Number(id) },
+      where: { id: id },
       data: { email, fullName },
     });
 

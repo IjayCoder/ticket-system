@@ -1,34 +1,42 @@
 import express from "express";
 import cors from "cors";
-export const app = express();
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+
+import csrfRoutes from "./routes/csrf.routes";
 import authRoutes from "./routes/auth.routes";
 import ticketRoutes from "./routes/ticket.routes";
 import notificationRoutes from "./routes/notification.routes";
 import settingsRoutes from "./routes/settings.routes";
-
 import userRoutes from "./routes/user.routes";
-import cookieParser from "cookie-parser";
 
-//middlewares
+import { csrfProtection } from "./middlewares/csrf.middleware";
+
+export const app = express();
+
 app.use(express.json());
+
 app.use(
   cors({
     credentials: true,
-    origin: "https://ijayticketsystem.web.app",
+    origin: process.env.CLIENT_URL,
   })
 );
+
+app.use(helmet());
 app.use(cookieParser());
 
-//routes
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/ticket", ticketRoutes);
+//  Route to retrieve the CSRF token (accessible without protection).
+app.use("/api", csrfRoutes);
 
-app.use("/api/notification", notificationRoutes);
+// Apply CSRF protection to all sensitive routes.
+app.use("/api/auth", csrfProtection, authRoutes);
+app.use("/api/user", csrfProtection, userRoutes);
+app.use("/api/ticket", csrfProtection, ticketRoutes);
+app.use("/api/notification", csrfProtection, notificationRoutes);
+app.use("/api/settings", csrfProtection, settingsRoutes);
 
-app.use("/api/settings", settingsRoutes);
-
-//404 handler
+// 404 handler
 app.use("/", (req, res) => {
-  res.status(404).send("routes not found");
+  res.status(404).json({ message: "Route not found" });
 });

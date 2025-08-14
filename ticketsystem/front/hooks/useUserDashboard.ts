@@ -54,7 +54,7 @@ export function useUserDashboard(page: number) {
     fetchStats();
   }, [fetchStats]);
 
-  const handleDeleteTicket = async (id: number) => {
+  const handleDeleteTicket = async (id: string) => {
     try {
       await DeleteTicket(id);
       toast.success("Deleted", { description: "Ticket deleted!!" });

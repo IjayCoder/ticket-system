@@ -5,27 +5,27 @@ import { wrapEmailContent } from "../utils/email/layout";
 const prisma = new PrismaClient();
 
 /**
- * Crée une notification et envoie éventuellement un email en fonction des préférences utilisateur
+ * Create a notification and optionally send an email based on the user's preferences.
  */
 export const notificationService = {
   async createNotification(
-    userId: number,
+    userId: string,
     title: string,
     message: string,
     type: "info" | "warning" | "success" | "error",
-    ticketId?: number
+    ticketId?: string
   ) {
-    // 🔹 1. Crée la notification in-app
+    //  Create the in-app notification
     const notification = await prisma.notification.create({
       data: { userId, title, message, type, ticketId },
     });
 
-    // 🔹 2. Récupère les préférences utilisateur
+    //  retrieve the user's preferences
     const settings = await prisma.userSettings.findUnique({
       where: { userId },
     });
 
-    // 🔹 3. Envoie par email uniquement si activé
+    //  send via email only if enabled
     if (settings?.receiveNotificationsEmail) {
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -54,14 +54,14 @@ export const notificationService = {
     });
   },
 
-  async markAllAsRead(userId: number) {
+  async markAllAsRead(userId: string) {
     return await prisma.notification.updateMany({
       where: { userId },
       data: { isRead: true },
     });
   },
 
-  async getUserNotifications(userId: number) {
+  async getUserNotifications(userId: string) {
     return await prisma.notification.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },

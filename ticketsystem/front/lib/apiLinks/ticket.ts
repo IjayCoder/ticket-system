@@ -2,17 +2,34 @@ import { Priority, Ticket } from "@/types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+let csrfToken: string | null = null;
+
+// Récupère le CSRF token depuis le backend
+export const getCsrfToken = async () => {
+  const res = await fetch(`${API_URL}/api/csrf-token`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
+  const data = await res.json();
+  csrfToken = data.csrfToken;
+};
+
 export const CreateTicket = async (
   title: string,
   description: string,
   priority: Priority,
   projectName: string,
-  assignedDevId: number,
-  clientId: number
+  assignedDevId: string,
+  clientId: string
 ) => {
+  if (!csrfToken) await getCsrfToken();
+
   const res = await fetch(`${API_URL}/api/ticket`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-csrf-token": csrfToken as string,
+    },
     body: JSON.stringify({
       title,
       description,
@@ -77,7 +94,7 @@ export const GetMyTickets = async (page = 1, limit = 10) => {
   };
 };
 
-export const GetTicketById = async (id: number): Promise<Ticket> => {
+export const GetTicketById = async (id: string): Promise<Ticket> => {
   const res = await fetch(`${API_URL}/api/ticket/${id}`, {
     method: "GET",
     credentials: "include",
@@ -100,17 +117,22 @@ export const UpdateTicket = async ({
   assignedDev,
   clientId,
 }: {
-  id: number;
+  id: string;
   title: string;
   description: string;
   priority: Priority;
   projectName: string;
-  assignedDev: number;
-  clientId: number;
+  assignedDev: string;
+  clientId: string;
 }) => {
+  if (!csrfToken) await getCsrfToken();
+
   const res = await fetch(`${API_URL}/api/ticket/${id}`, {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-csrf-token": csrfToken as string,
+    },
     body: JSON.stringify({
       title,
       description,
@@ -131,11 +153,16 @@ export const UpdateTicket = async ({
   return data.ticket;
 };
 
-export const UpdateStatus = async (id: number, status: string) => {
+export const UpdateStatus = async (id: string, status: string) => {
+  if (!csrfToken) await getCsrfToken();
+
   const res = await fetch(`${API_URL}/api/ticket/status/${id}`, {
     method: "PUT",
     credentials: "include",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-csrf-token": csrfToken as string,
+    },
     body: JSON.stringify({ status }),
   });
 
@@ -147,11 +174,14 @@ export const UpdateStatus = async (id: number, status: string) => {
 };
 
 export const DeleteTicket = async (
-  id: number
+  id: string
 ): Promise<{ message: string }> => {
+  if (!csrfToken) await getCsrfToken();
+
   const res = await fetch(`${API_URL}/api/ticket/${id}`, {
     method: "DELETE",
     credentials: "include",
+    headers: { "x-csrf-token": csrfToken as string },
   });
 
   if (!res.ok) {

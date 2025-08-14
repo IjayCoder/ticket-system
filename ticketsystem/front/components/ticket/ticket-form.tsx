@@ -23,14 +23,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { mockProjects } from "@/lib/mock-data";
-import type { Priority, Status } from "@/types";
+import type { Priority, Status, Ticket } from "@/types";
 import { CreateTicket } from "@/lib/apiLinks/ticket";
 import { GetCurrentUser, GetDev } from "@/lib/apiLinks/user";
 import { User } from "@/types";
 import { toast } from "sonner";
 
 interface TicketFormProps {
-  onTicketCreated: () => void;
+  onTicketCreated: (ticket: Ticket) => void;
 }
 
 export function TicketForm({ onTicketCreated }: TicketFormProps) {
@@ -61,24 +61,37 @@ export function TicketForm({ onTicketCreated }: TicketFormProps) {
       clientId,
     } = formData;
 
-    await CreateTicket(
-      title,
-      description,
-      priority,
-      projectName,
-      parseInt(assignedDevId),
-      parseInt(clientId)
-    )
-      .then((data) => {
-        toast.success("Created!", {
-          description: "Ticket created successfully!!",
-        });
-        setOpen(false); // 👈 ferme le dialog ici
-      })
-      .catch((err) =>
-        toast.error("Error", { description: "Devs fetching failed" })
-      )
-      .finally(() => setLoading(false));
+    try {
+      const data = await CreateTicket(
+        title,
+        description,
+        priority,
+        projectName,
+        assignedDevId,
+        clientId
+      );
+
+      toast.success("Created!", {
+        description: "Ticket created successfully!!",
+      });
+
+      setOpen(false); // fermer le modal
+      setFormData({
+        title: "",
+        description: "",
+        priority: "MEDIUM",
+        status: "OPEN",
+        projectName: "",
+        assignedDevId: "",
+        clientId: formData.clientId,
+      });
+
+      onTicketCreated(data.ticket);
+    } catch (err) {
+      toast.error("Error", { description: "Failed to create ticket" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDev = async () => {
@@ -100,9 +113,6 @@ export function TicketForm({ onTicketCreated }: TicketFormProps) {
           ...prev,
           clientId: String(user.id),
         }));
-        toast.success("Created!", {
-          description: "Ticket created successfully!!",
-        });
       } catch (err) {
         toast.error("Error", { description: "Error occurs while processing" });
       }
@@ -171,25 +181,6 @@ export function TicketForm({ onTicketCreated }: TicketFormProps) {
                 </SelectContent>
               </Select>
             </div>
-
-            {/*<div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: Status) =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="OPEN">OPEN</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>*/}
           </div>
 
           <div className="space-y-2">

@@ -23,7 +23,7 @@ export function useTickets(userId: string, page: number) {
     }
   };
 
-  const updateStatus = async (ticketId: number, status: Status) => {
+  const updateStatus = async (ticketId: string, status: Status) => {
     try {
       await UpdateStatus(ticketId, status);
       toast.success("Ticket status updated");

@@ -2,8 +2,6 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
@@ -18,7 +16,6 @@ import { Label } from "@/components/ui/label";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Bug, Eye, EyeOff } from "lucide-react";
-import { signUp } from "@/lib/apiLinks/auth";
 import { useRegister } from "@/hooks/useRegister";
 
 export default function RegisterPage() {

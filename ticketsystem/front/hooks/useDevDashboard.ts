@@ -54,7 +54,7 @@ export function useDevDashboard(user: User) {
     }
   };
 
-  const handleStatusUpdate = async (ticketId: number, newStatus: Status) => {
+  const handleStatusUpdate = async (ticketId: string, newStatus: Status) => {
     try {
       await UpdateStatus(ticketId, newStatus);
       toast.success("Changed", {

@@ -16,20 +16,27 @@ import {
   isDevOnly,
   protectedRoute,
 } from "../middlewares/middleware";
+import { sanitizeBody } from "../middlewares/sanitizeMiddleware";
 
 const router = Router();
 router.use(authenticateUser);
 
-router.post("/", protectedRoute, isClientOnly, createTicket);
+router.post("/", sanitizeBody, protectedRoute, isClientOnly, createTicket);
 router.get("/", protectedRoute, isAdminOnly, getTickets);
 router.get("/user", protectedRoute, getMyTickets);
 
 router.get("/stats", protectedRoute, getDashboardStats);
 
 router.get("/:id", protectedRoute, getTicketById);
-router.patch("/:id", protectedRoute, isClientOnly, updateTicket);
+router.patch("/:id", sanitizeBody, protectedRoute, isClientOnly, updateTicket);
 
-router.put("/status/:id", protectedRoute, isDevOnly, updateTicketStatus);
+router.put(
+  "/status/:id",
+  sanitizeBody,
+  protectedRoute,
+  isDevOnly,
+  updateTicketStatus
+);
 router.delete("/:id", protectedRoute, deleteTicket);
 
 export default router;

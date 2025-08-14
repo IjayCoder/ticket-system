@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,23 +25,11 @@ import { PriorityBadge } from "@/components/priority-badge";
 import { Pagination } from "@/components/pagination";
 import { TicketDetailsModal } from "@/components/ticket/ticket-details-modal";
 import { TicketEditModal } from "@/components/ticket/ticket-edit-modal";
-import { Clock, CheckCircle, Edit, Code, Send } from "lucide-react";
-import type {
-  TicketWithDetails,
-  PaginatedResponse,
-  Priority,
-  Status,
-  User,
-  Ticket,
-} from "@/types";
-import {
-  GetDashbordStats,
-  GetMyTickets,
-  UpdateStatus,
-} from "@/lib/apiLinks/ticket";
+import { Clock, CheckCircle, Code, Send } from "lucide-react";
+import type { Status, User } from "@/types";
+
 import { getInitials } from "@/lib/utils";
 import { NotificationModal } from "../../notifications/notification-modal";
-import { toast } from "sonner";
 import { useDevDashboard } from "@/hooks/useDevDashboard";
 
 interface DevDashboardProps {

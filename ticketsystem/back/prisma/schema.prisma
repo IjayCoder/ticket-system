@@ -10,7 +10,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String      @id @default(uuid())
   email     String   @unique
   password  String
   role      Role     @default(CLIENT)
@@ -29,15 +29,15 @@ enum Role {
 }
 
 model Ticket {
-  id          Int      @id @default(autoincrement())
+  id          String      @id @default(uuid())
   title       String
   description String
   priority    Priority @default(LOW)
   projectName String
-  assignedDevId Int?
+  assignedDevId String?
   assignedDev   User?    @relation("assignedDevTickets", fields: [assignedDevId], references: [id])
   status      Status   @default(UNOPEN)
-  clientId    Int
+  clientId    String
   client      User     @relation("clientTickets", fields: [clientId], references: [id])
   createdAt   DateTime @default(now())
   updateAt    DateTime?
@@ -60,11 +60,11 @@ enum Status {
 
 model Notification {
   id        String   @id @default(cuid())
-  userId    Int      // ✅ Corrigé ici (Int au lieu de String)
+  userId    String     
   title     String
   message   String
   type      NotificationType
-  ticketId  Int?     // ✅ Corrigé ici aussi, car Ticket.id est un Int
+  ticketId  String?     // ✅ Corrigé ici aussi, car Ticket.id est un Int
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -85,7 +85,7 @@ enum NotificationType {
 model UserSettings {
 
   id    Int   @id @default(autoincrement())
-  userId                    Int     @unique
+  userId                    String     @unique
   receiveNotificationsEmail   Boolean @default(true)   
   receiveTicketUpdateNotification Boolean @default(true)
   user                   User    @relation(fields: [userId], references: [id])

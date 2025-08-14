@@ -18,7 +18,7 @@ export const SendNotification = async (req: Request, res: Response) => {
     }
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id: parseInt(ticketId) },
+      where: { id: ticketId },
       include: { client: true, assignedDev: true },
     });
 
@@ -29,7 +29,7 @@ export const SendNotification = async (req: Request, res: Response) => {
       return;
     }
 
-    let recipientId: number | null = null;
+    let recipientId: string | null = null;
 
     if (sender?.role === "ADMIN") {
       if (recipientType === "CLIENT") {
@@ -71,7 +71,7 @@ export const SendNotification = async (req: Request, res: Response) => {
       title,
       message,
       type,
-      parseInt(ticketId)
+      ticketId
     );
 
     res.status(201).json(newNotification);

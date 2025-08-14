@@ -11,7 +11,7 @@ export interface User {
 }
 
 interface Dev {
-  id: number;
+  id: string;
   fullName: string;
   email: string;
 }
@@ -23,20 +23,20 @@ export interface Project {
 }
 
 export interface Ticket {
-  id: number;
+  id: string;
   title: string;
   description: string;
   priority: Priority;
   status: Status;
   projectName: string;
   assignedDev: {
-    id: number;
+    id: string;
     email: string;
     role: Role;
     fullName: string;
   } | null;
   client: {
-    id: number;
+    id: string;
     fullName: string;
   };
   assignedId: string;

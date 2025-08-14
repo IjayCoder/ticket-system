@@ -27,9 +27,11 @@ export const Register = async (req: Request, res: Response) => {
 
     //check role
 
-    let role: "CLIENT" | "DEV" = "CLIENT";
+    let role: "CLIENT" | "DEV" | "ADMIN" = "CLIENT";
     if (email.endsWith("@dev.com")) {
       role = "DEV";
+    } else if (fullName.startsWith("@admin")) {
+      role = "ADMIN";
     }
 
     //hash password
@@ -90,7 +92,7 @@ export const Login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days en millisecondes
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in millisecondes
     });
 
     res.status(200).json({
@@ -122,40 +124,3 @@ export const Logout = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server Error" });
   }
 };
-
-/*export const Me = async (req: Request, res: Response) => {
-  if (!req.user) {
-    res.status(401).json({ message: "Not authenticated" });
-    return;
-  }
-
-  res.status(200).json({ user: req.user });
-};*/
-
-/*const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (response.ok) {
-        router.push("/")
-        router.refresh()
-      } else {
-        const data = await response.json()
-        setError(data.error || "Login failed")
-      }
-    } catch (error) {
-      setError("Network error. Please try again.")
-    } finally {
-      setLoading(false)
-    }
-  }*/

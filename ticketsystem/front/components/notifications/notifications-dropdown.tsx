@@ -35,7 +35,7 @@ export function NotificationsDropdown({ user }: NotificationsDropdownProps) {
     const fetchNotifications = async () => {
       try {
         const userNotifications = await GetNotification();
-        setNotifications(userNotifications.slice(0, 3));
+        setNotifications(userNotifications.slice(0, 4));
       } catch (error) {
         toast.error("Error", {
           description: "Error when getting the notifications",
@@ -121,7 +121,7 @@ export function NotificationsDropdown({ user }: NotificationsDropdownProps) {
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
-              {unreadCount}
+              {unreadCount > 3 ? "3+" : unreadCount}
             </Badge>
           )}
         </Button>

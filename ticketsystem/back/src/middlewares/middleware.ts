@@ -3,7 +3,7 @@ import cookie from "cookie";
 import jwt from "jsonwebtoken";
 
 interface MyTokenPayload {
-  id: number;
+  id: string;
   email: string;
   role: string;
 }

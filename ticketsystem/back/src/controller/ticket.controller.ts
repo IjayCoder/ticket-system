@@ -12,74 +12,12 @@ interface Ticket {
 }
 
 interface CustomRequest extends Request {
-  user?: { id: number; role: string };
+  user?: { id: string; role: string };
 }
 
 const stats = {};
 
 const prisma = new PrismaClient();
-
-/*export const createTicket = async (req: Request, res: Response) => {
-  // const user = req.user;
-  try {
-    const {
-      title,
-      description,
-      priority,
-      projectName,
-      assignedDevId,
-      clientId,
-    } = req.body;
-
-    if (
-      !title ||
-      !description ||
-      !priority ||
-      !projectName ||
-      !assignedDevId ||
-      !clientId
-    ) {
-      res.status(400).json({ message: "Fill all the fields" });
-      return;
-    }
-
-    const newTicket = await prisma.ticket.create({
-      data: {
-        title,
-        description,
-        priority,
-        projectName,
-        assignedDevId,
-        clientId,
-      },
-      include: {
-        assignedDev: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            role: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    res.status(200).json({
-      message: "Ticket created successfully",
-      ticket: newTicket,
-    });
-  } catch (error) {
-    console.log("Ticket creation failed", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};*/
 
 export const createTicket = async (req: Request, res: Response) => {
   try {
@@ -135,34 +73,34 @@ export const createTicket = async (req: Request, res: Response) => {
 
     // ------------------- NOTIFICATIONS ------------------- //
 
-    // 1️⃣ Client (obligatoire)
+    // Client
     await notificationService.createNotification(
       newTicket.client.id,
-      "Votre ticket a été créé ✅",
-      `Bonjour ${newTicket.client.fullName}, votre ticket "${title}" a été créé.`,
+      "Your ticket has been created ✅",
+      `Hello ${newTicket.client.fullName}, your ticket "${title}" has been created.`,
       "success",
       newTicket.id
     );
 
-    // 2️⃣ Dev assigné (obligatoire si dev)
+    // Dev assigned
     if (newTicket.assignedDev) {
       await notificationService.createNotification(
         newTicket.assignedDev.id,
-        "Un ticket vous a été assigné 📌",
-        `Bonjour ${newTicket.assignedDev.fullName}, 
-        le ticket "${title}" vous a été assigné par ${newTicket.client.fullName}.`,
+        "A ticket has been assigned to you 📌",
+        `Hello ${newTicket.assignedDev.fullName}, 
+        the ticket "${title}" has been assigned to you by ${newTicket.client.fullName}.`,
         "info",
         newTicket.id
       );
     }
 
-    // 3️⃣ Admins (obligatoire dans l'app)
+    //  Admins
     const admins = await prisma.user.findMany({ where: { role: "ADMIN" } });
     for (const admin of admins) {
       await notificationService.createNotification(
         admin.id,
-        "Nouveau ticket créé 🚨",
-        `Un nouveau ticket "${title}" a été créé par ${newTicket.client.fullName}.`,
+        "New ticket created 🚨",
+        `A new ticket "${title}" has been created by ${newTicket.client.fullName}.`,
         "warning",
         newTicket.id
       );
@@ -281,7 +219,7 @@ export const getTicketById = async (req: Request, res: Response) => {
     const userId = req.user?.id;
 
     const ticket = await prisma.ticket.findUnique({
-      where: { id: Number(id) },
+      where: { id: id },
       include: { client: true },
     });
 
@@ -305,37 +243,19 @@ export const getTicketById = async (req: Request, res: Response) => {
   }
 };
 
-/*export const updateTicket = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { title, description, priority, projectName, status } = req.body;
-
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: Number(id) },
-      data: { title, description, priority, projectName, status },
-    });
-
-    res.status(200).json({ message: "Ticket updated", ticket: updatedTicket });
-    return;
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error " });
-  }
-};*/
-
 export const updateTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { title, description, priority, projectName } = req.body;
 
     const updatedTicket = await prisma.ticket.update({
-      where: { id: Number(id) },
+      where: { id: id },
       data: { title, description, priority, projectName },
       include: { client: true, assignedDev: true },
     });
 
     const currentUser = req.user;
 
-    // Si c'est le client qui modifie → notifier dev + admins (selon leurs settings)
     if (currentUser?.role === "CLIENT") {
       if (updatedTicket.assignedDev) {
         const devSettings = await prisma.userSettings.findUnique({
@@ -345,8 +265,8 @@ export const updateTicket = async (req: Request, res: Response) => {
         if (devSettings?.receiveTicketUpdateNotification) {
           await notificationService.createNotification(
             updatedTicket.assignedDev.id,
-            "Un ticket a été modifié",
-            `Le client ${updatedTicket.client.fullName} a modifié le ticket "${updatedTicket.title}".`,
+            "A ticket has been updated",
+            `The client ${updatedTicket.client.fullName} has updated the ticket "${updatedTicket.title}".`,
             "warning",
             updatedTicket.id
           );
@@ -362,8 +282,8 @@ export const updateTicket = async (req: Request, res: Response) => {
         if (adminSettings?.receiveTicketUpdateNotification) {
           await notificationService.createNotification(
             admin.id,
-            "Un ticket a été modifié",
-            `Le client ${updatedTicket.client.fullName} a modifié le ticket "${updatedTicket.title}".`,
+            "A ticket has been updated",
+            `The client ${updatedTicket.client.fullName} has updated the ticket "${updatedTicket.title}".`,
             "warning",
             updatedTicket.id
           );
@@ -377,38 +297,8 @@ export const updateTicket = async (req: Request, res: Response) => {
   }
 };
 
-/*export const updateTicketStatus = async (req: Request, res: Response) => {
-  const ticketId = Number(req.params.id);
-  const { status } = req.body;
-  const user = req.user;
-
-  try {
-    const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
-
-    if (!ticket) {
-      res.status(404).json({ message: "Ticket not found!!" });
-      return;
-    }
-
-    if (user?.role === "DEV" && ticket?.assignedDevId !== user.id) {
-      res.status(403).json({ message: "Not autorized to update this ticket" });
-      return;
-    }
-
-    const updateStatus = await prisma.ticket.update({
-      where: { id: ticketId },
-      data: { status },
-    });
-
-    res.status(200).json({ ticket: updateStatus });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-    return;
-  }
-};*/
-
 export const updateTicketStatus = async (req: Request, res: Response) => {
-  const ticketId = Number(req.params.id);
+  const ticketId = req.params.id;
   const { status } = req.body;
   const user = req.user;
 
@@ -439,12 +329,12 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
     // 1️⃣ Client : message spécifique si RESOLVED
     const clientMessage =
       status === "RESOLVED"
-        ? `Bonjour ${updatedTicket.client.fullName}, votre ticket "${updatedTicket.title}" a été résolu ✅.`
-        : `Le statut de votre ticket "${updatedTicket.title}" est maintenant "${status}".`;
+        ? `Hello  ${updatedTicket.client.fullName}, your ticket "${updatedTicket.title}" has been resolved ✅.`
+        : `The status of your ticket "${updatedTicket.title}"  is now "${status}".`;
 
     await notificationService.createNotification(
       updatedTicket.client.id,
-      "Mise à jour de votre ticket",
+      "Your ticket has been updated",
       clientMessage,
       "info",
       updatedTicket.id
@@ -455,21 +345,13 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
       where: { userId: updatedTicket.client.id },
     });
 
-    /*if (clientSettings?.receiveNotificationsEmail) {
-      await sendEmail(
-        updatedTicket.client.email,
-        "Mise à jour de votre ticket",
-        clientMessage
-      );
-    }*/
-
-    // 2️⃣ Admins
+    // Admins
     const admins = await prisma.user.findMany({ where: { role: "ADMIN" } });
     for (const admin of admins) {
       await notificationService.createNotification(
         admin.id,
-        "Mise à jour du ticket",
-        `Le ticket "${updatedTicket.title}" du client ${updatedTicket.client.fullName} est maintenant "${status}".`,
+        "Ticket update",
+        `The ticket "${updatedTicket.title}" from client ${updatedTicket.client.fullName} is now "${status}".`,
         "info",
         updatedTicket.id
       );
@@ -477,14 +359,6 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
       const adminSettings = await prisma.userSettings.findUnique({
         where: { userId: admin.id },
       });
-
-      /* if (adminSettings?.receiveNotificationsEmail) {
-        await sendEmail(
-          admin.email,
-          "Mise à jour du ticket",
-          `Le ticket "${updatedTicket.title}" du client ${updatedTicket.client.fullName} est maintenant "${status}".`
-        );
-      }*/
     }
 
     res.status(200).json({ ticket: updatedTicket });
@@ -498,7 +372,7 @@ export const deleteTicket = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    await prisma.ticket.delete({ where: { id: Number(id) } });
+    await prisma.ticket.delete({ where: { id: id } });
 
     res.status(200).json({ message: "Ticket deleted" });
     return;
@@ -577,4 +451,5 @@ export const getDashboardStats = async (req: CustomRequest, res: Response) => {
   }
 };
 
+//next features...
 export const getResolvedTime = async (req: CustomRequest, res: Response) => {};

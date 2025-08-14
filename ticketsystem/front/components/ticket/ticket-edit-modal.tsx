@@ -21,13 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { mockProjects } from "@/lib/mock-data";
-import type {
-  Priority,
-  Status,
-  Ticket,
-  TicketWithDetails,
-  User,
-} from "@/types";
+import type { Priority, Ticket, User } from "@/types";
 import { UpdateTicket } from "@/lib/apiLinks/ticket";
 import { GetDev } from "@/lib/apiLinks/user";
 
@@ -76,8 +70,8 @@ export function TicketEditModal({
         description: formData.description,
         priority: formData.priority,
         projectName: formData.projectName,
-        assignedDev: parseInt(formData.assignedDev),
-        clientId: parseInt(formData.clientId),
+        assignedDev: formData.assignedDev,
+        clientId: formData.clientId,
       });
       console.log("Ticket successfully updated!");
 
