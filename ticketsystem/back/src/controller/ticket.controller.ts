@@ -17,6 +17,17 @@ interface CustomRequest extends Request {
 
 const stats = {};
 
+const groupTickets = <T extends Record<string, any>>(
+  tickets: T[],
+  field: keyof T,
+  values: string[]
+): Record<string, T[]> => {
+  return values.reduce((acc, value) => {
+    acc[value.toLowerCase()] = tickets.filter((t) => t[field] === value);
+    return acc;
+  }, {} as Record<string, T[]>);
+};
+
 const prisma = new PrismaClient();
 
 export const createTicket = async (req: Request, res: Response) => {
@@ -114,7 +125,6 @@ export const createTicket = async (req: Request, res: Response) => {
     });
     return;
   } catch (error) {
-    console.log("Ticket creation failed", error);
     res.status(500).json({ message: "Internal server error." });
     return;
   }
@@ -382,8 +392,6 @@ export const deleteTicket = async (req: Request, res: Response) => {
 };
 
 export const getDashboardStats = async (req: CustomRequest, res: Response) => {
-  console.log("User in stats route", req.user);
-
   const role = req.user?.role;
   const userId = req.user?.id;
   const stats: Record<string, number> = {};
@@ -448,6 +456,58 @@ export const getDashboardStats = async (req: CustomRequest, res: Response) => {
     res.status(200).json({ stats });
   } catch (error) {
     res.status(500).json({ message: "Internal server error " });
+  }
+};
+
+// filter
+
+export const filterTicketPriority = async (req: Request, res: Response) => {
+  const role = req.user?.role;
+
+  try {
+    if (role !== "ADMIN") {
+      res.status(403).json({ message: "Access denied" });
+      return;
+    }
+
+    const tickets = await prisma.ticket.findMany({
+      orderBy: { priority: "asc" },
+    });
+
+    const grouped = groupTickets(tickets, "priority", [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+    ]);
+    res.json(grouped);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const filterTicketStatus = async (req: Request, res: Response) => {
+  const role = req.user?.role;
+
+  try {
+    if (role !== "ADMIN") {
+      res.status(403).json({ message: "Access denied" });
+      return;
+    }
+
+    const tickets = await prisma.ticket.findMany({
+      orderBy: { status: "asc" },
+    });
+
+    const grouped = groupTickets(tickets, "status", [
+      "UNOPEN",
+      "OPEN",
+      "IN_PROGRESS",
+      "RESOLVED",
+    ]);
+
+    res.json(grouped);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

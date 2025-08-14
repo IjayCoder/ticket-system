@@ -12,7 +12,6 @@ export const Register = async (req: Request, res: Response) => {
     //check the fields
     if (!email || !password) {
       res.status(400).json({ message: "email and password are required" });
-      console.log("email and password are required");
       return;
     }
 
@@ -21,14 +20,13 @@ export const Register = async (req: Request, res: Response) => {
 
     if (existingUser) {
       res.status(409).json({ message: "This email is already used !" });
-      console.log("This email is already used !");
       return;
     }
 
     //check role
 
     let role: "CLIENT" | "DEV" | "ADMIN" = "CLIENT";
-    if (email.endsWith("@dev.com")) {
+    if (fullName.endsWith("_@dev")) {
       role = "DEV";
     } else if (fullName.startsWith("@admin")) {
       role = "ADMIN";
@@ -53,7 +51,6 @@ export const Register = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.log("registration failed");
     res.status(500).json({ message: "internal server error." });
     return;
   }

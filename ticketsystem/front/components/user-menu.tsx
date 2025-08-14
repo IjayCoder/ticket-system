@@ -17,6 +17,7 @@ import { LogOut, Settings, User } from "lucide-react";
 import type { User as UserType } from "@/types";
 import { getInitials } from "@/lib/utils";
 import { Logout } from "@/lib/apiLinks/auth";
+import { toast } from "sonner";
 
 interface UserMenuProps {
   user: UserType;
@@ -33,7 +34,7 @@ export function UserMenu({ user }: UserMenuProps) {
       await Logout();
       router.push("/login");
     } catch (error) {
-      console.log("Erreur occurs when  login out:", error);
+      toast.error("Error", { description: "Erreur occurs when  login out" });
     } finally {
       setLoading(false);
     }

@@ -11,21 +11,40 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import type { Priority, Status } from "@/types";
 
+type Key = "status" | "priority";
+
 interface TicketFiltersProps {
   filters: {
-    status?: Status;
-    priority?: Priority;
+    status?: Status | "ALL";
+    priority?: Priority | "ALL";
   };
-  onFilterChange: (key: string, value: string | undefined) => void;
+  onFilterChange: (key: Key, value: Status | Priority | "ALL") => void;
   onClearFilters: () => void;
 }
+
+const STATUS_OPTIONS: { value: Status | "ALL"; label: string }[] = [
+  { value: "ALL", label: "All Status" },
+  { value: "OPEN", label: "Open" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "RESOLVED", label: "Resolved" },
+  { value: "UNOPEN", label: "Unopen" },
+];
+
+const PRIORITY_OPTIONS: { value: Priority | "ALL"; label: string }[] = [
+  { value: "ALL", label: "All Priority" },
+  { value: "HIGH", label: "High" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "LOW", label: "Low" },
+];
 
 export function TicketFilters({
   filters,
   onFilterChange,
   onClearFilters,
 }: TicketFiltersProps) {
-  const hasActiveFilters = filters.status || filters.priority;
+  const hasActive =
+    (filters.status && filters.status !== "ALL") ||
+    (filters.priority && filters.priority !== "ALL");
 
   return (
     <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4 p-4 bg-muted/50 rounded-lg">
@@ -34,41 +53,45 @@ export function TicketFilters({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        {/* STATUS */}
         <Select
-          value={filters.status || "All Status"}
+          value={filters.status ?? "ALL"}
           onValueChange={(value) =>
-            onFilterChange("status", value || undefined)
+            onFilterChange("status", value as Status | "ALL")
           }
         >
-          <SelectTrigger className="w-full sm:w-[140px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="All Status">All Status</SelectItem>
-            <SelectItem value="Open">Open</SelectItem>
-            <SelectItem value="In Progress">In Progress</SelectItem>
-            <SelectItem value="Resolved">Resolved</SelectItem>
+            {STATUS_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
+        {/* PRIORITY */}
         <Select
-          value={filters.priority || "All Priority"}
+          value={filters.priority ?? "ALL"}
           onValueChange={(value) =>
-            onFilterChange("priority", value || undefined)
+            onFilterChange("priority", value as Priority | "ALL")
           }
         >
-          <SelectTrigger className="w-full sm:w-[140px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="All Priority">All Priority</SelectItem>
-            <SelectItem value="High">High</SelectItem>
-            <SelectItem value="Medium">Medium</SelectItem>
-            <SelectItem value="Low">Low</SelectItem>
+            {PRIORITY_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        {hasActiveFilters && (
+        {hasActive && (
           <Button
             variant="outline"
             size="sm"

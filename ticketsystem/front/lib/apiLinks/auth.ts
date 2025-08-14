@@ -1,25 +1,11 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-//let csrfToken: string | null = null;
-
-// Récupère le CSRF token depuis le backend
-/*export const getCsrfToken = async () => {
-  const res = await fetch(`${API_URL}/api/csrf-token`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
-  const data = await res.json();
-  csrfToken = data.csrfToken;
-};*/
-
 export const signUp = async (
   fullName: string,
   email: string,
 
   password: string
 ) => {
-  //  if (!csrfToken) await getCsrfToken(); "x-csrf-token": csrfToken as string
-
   const res = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
@@ -58,7 +44,6 @@ export const Login = async (
   }
 
   const data = await res.json();
-  console.log(data);
   return data;
 };
 

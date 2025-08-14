@@ -50,6 +50,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
     filters,
     handleFilterChange,
     handleClearFilters,
+
     selectedTicket,
     setSelectedTicket,
     detailsModalOpen,

@@ -60,7 +60,7 @@ export function NotificationsDropdown({ user }: NotificationsDropdownProps) {
       //setNotifications(updated);
       setNotifications(updated.slice(0, 3));
     } catch (err) {
-      console.error("Erreur Mark as Read :", err);
+      toast.error("Error", { description: "Erreur to Mark as Read" });
     }
   };
 
@@ -72,7 +72,7 @@ export function NotificationsDropdown({ user }: NotificationsDropdownProps) {
       //setNotifications(updated);
       setNotifications(updated.slice(0, 3));
     } catch (err) {
-      console.error("Erreur Mark All as Read :", err);
+      toast.error("Error", { description: "Erreur to Mark All as Read" });
     }
   };
 

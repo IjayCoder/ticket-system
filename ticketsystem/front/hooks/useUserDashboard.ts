@@ -43,7 +43,6 @@ export function useUserDashboard(page: number) {
       const result = await GetDashbordStats();
       setStats(result);
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Failed to load stats");
     } finally {
       setLoading(false);

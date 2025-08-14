@@ -21,6 +21,7 @@ import {
 import type { User as UserType } from "@/types";
 import { UpdateProfile } from "@/lib/apiLinks/user";
 import { GetDashbordStats } from "@/lib/apiLinks/ticket";
+import { toast } from "sonner";
 
 interface ProfilePageProps {
   user: UserType;
@@ -54,14 +55,14 @@ export function ProfilePage({ user }: ProfilePageProps) {
 
     try {
       await UpdateProfile({
-        id: parseInt(user.id),
+        id: user.id,
         email: formData.email,
         fullName: formData.name,
       });
 
-      console.log("Profile updated");
+      toast.success("Updated", { description: "Profile updated" });
     } catch (error) {
-      console.error("failed to update");
+      toast.error("Error", { description: "failed to update" });
     } finally {
       setIsEditing(false);
     }
@@ -82,7 +83,6 @@ export function ProfilePage({ user }: ProfilePageProps) {
         const result = await GetDashbordStats();
         setStats(result);
       } catch (err: any) {
-        console.error(err);
         setError(err.message || "Failed to load stats");
       } finally {
         setLoading(false);

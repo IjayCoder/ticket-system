@@ -9,9 +9,6 @@ export const SendNotification = async (req: Request, res: Response) => {
     const { title, message, type, ticketId, recipientType } = req.body;
     const sender = req.user;
 
-    console.log("Sender:", sender);
-    console.log("Body:", req.body);
-
     if (!title || !message || !type || !ticketId) {
       res.status(400).json({ message: "Fill all the fields" });
       return;
@@ -21,8 +18,6 @@ export const SendNotification = async (req: Request, res: Response) => {
       where: { id: ticketId },
       include: { client: true, assignedDev: true },
     });
-
-    console.log("Ticket:", ticket);
 
     if (!ticket) {
       res.status(404).json({ message: "Ticket not found" });

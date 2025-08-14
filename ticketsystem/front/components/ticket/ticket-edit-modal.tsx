@@ -24,6 +24,7 @@ import { mockProjects } from "@/lib/mock-data";
 import type { Priority, Ticket, User } from "@/types";
 import { UpdateTicket } from "@/lib/apiLinks/ticket";
 import { GetDev } from "@/lib/apiLinks/user";
+import { toast } from "sonner";
 
 interface TicketEditModalProps {
   ticket: Ticket | null;
@@ -73,11 +74,11 @@ export function TicketEditModal({
         assignedDev: formData.assignedDev,
         clientId: formData.clientId,
       });
-      console.log("Ticket successfully updated!");
+      toast.success("Updated", { description: "Ticket successfully updated!" });
 
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to update ticket:", error);
+      toast.error("Error", { description: "Failed to update ticket" });
     } finally {
       setLoading(false);
     }
@@ -88,7 +89,6 @@ export function TicketEditModal({
       const data = await GetDev();
       setDevs(data);
     } catch (err) {
-      console.log("failed when getting dev");
       setError("Erreur lors du chargement des développeurs.");
     }
   };

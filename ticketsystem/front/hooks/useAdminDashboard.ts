@@ -1,7 +1,12 @@
-// hooks/useAdminDashboard.ts
-
-import { useEffect, useState } from "react";
-import type { Notification, Priority, Status, Ticket, User } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+import type {
+  FilterState,
+  Notification,
+  Priority,
+  Status,
+  Ticket,
+  User,
+} from "@/types";
 import { GetDashbordStats, GetTickets } from "@/lib/apiLinks/ticket";
 import { toast } from "sonner";
 
@@ -12,10 +17,10 @@ export function useAdminDashboard(user: User) {
   const [error, setError] = useState("");
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [filters, setFilters] = useState<{
-    status?: Status;
-    priority?: Priority;
-  }>({});
+  const [filters, setFilters] = useState<FilterState>({
+    status: "ALL",
+    priority: "ALL",
+  });
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [notification, setNotification] = useState<Notification | null>(null);
 
@@ -68,18 +73,31 @@ export function useAdminDashboard(user: User) {
   };
 
   const handleClearFilters = () => {
-    setFilters({});
+    setFilters({ status: "ALL", priority: "ALL" });
     setPage(1);
   };
 
   const handleAssignTicket = async (ticketId: string, assignedToId: string) => {
     try {
-      // TODO: Assign logic API call
       await fetchTickets();
     } catch (error) {
       toast.error("Error", { description: "Failed to assign ticket" });
     }
   };
+
+  const filteredTickets = useMemo(() => {
+    return tickets.filter((ticket) => {
+      const matchStatus =
+        !filters.status ||
+        filters.status === "ALL" ||
+        ticket.status === filters.status;
+      const matchPriority =
+        !filters.priority ||
+        filters.priority === "ALL" ||
+        ticket.priority === filters.priority;
+      return matchStatus && matchPriority;
+    });
+  }, [tickets, filters]);
 
   const handleTicketClick = (ticket: Ticket) => {
     setSelectedTicket(ticket);
@@ -97,7 +115,7 @@ export function useAdminDashboard(user: User) {
   };
 
   return {
-    tickets,
+    tickets: filteredTickets,
     stats,
     loading,
     error,

@@ -6,6 +6,7 @@ import { User } from "@/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HashLoader } from "react-spinners";
+import { toast } from "sonner";
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +22,9 @@ export default function Settings() {
         }
         setUser(data);
       } catch (err) {
-        console.error("Erreur récupération utilisateur", err);
+        toast.error("Error", {
+          description: "Error occurs when getting users",
+        });
         router.push("/login");
       }
     };

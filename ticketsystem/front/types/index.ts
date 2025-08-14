@@ -78,3 +78,8 @@ export interface TicketFilters {
   projectId?: string;
   assignedToId?: string;
 }
+
+export type FilterState = {
+  status: Status | "ALL";
+  priority: Priority | "ALL";
+};

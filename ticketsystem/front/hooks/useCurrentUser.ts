@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GetCurrentUser } from "@/lib/apiLinks/user";
 import { User } from "@/types";
+import { toast } from "sonner";
 
 export const useCurrentUser = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -20,7 +21,9 @@ export const useCurrentUser = () => {
         }
         setUser(data);
       } catch (err) {
-        console.error("Erreur récupération utilisateur", err);
+        toast.error("Error", {
+          description: "Error occurs when getting users",
+        });
         router.push("/login");
       } finally {
         setLoading(false);

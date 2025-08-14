@@ -2,18 +2,12 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 
-import csrfRoutes from "./routes/csrf.routes";
 import authRoutes from "./routes/auth.routes";
 import ticketRoutes from "./routes/ticket.routes";
 import notificationRoutes from "./routes/notification.routes";
 import settingsRoutes from "./routes/settings.routes";
 import userRoutes from "./routes/user.routes";
-
-dotenv.config();
-
-import { csrfProtection } from "./middlewares/csrf.middleware";
 
 export const app = express();
 
@@ -29,15 +23,7 @@ app.use(
 app.use(helmet());
 app.use(cookieParser());
 
-//  Route to retrieve the CSRF token (accessible without protection).
-app.use("/api", csrfRoutes);
-
-// Apply CSRF protection to all sensitive routes.
-/*app.use("/api/auth", csrfProtection, authRoutes);
-app.use("/api/user", csrfProtection, userRoutes);
-app.use("/api/ticket", csrfProtection, ticketRoutes);
-app.use("/api/notification", csrfProtection, notificationRoutes);
-app.use("/api/settings", csrfProtection, settingsRoutes);*/
+//  Route
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

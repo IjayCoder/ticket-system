@@ -1,6 +1,7 @@
 // components/notification/hooks/useNotificationItem.ts
 import { useState } from "react";
 import type { Notification } from "@/types";
+import { toast } from "sonner";
 
 export function useNotificationItem(
   notification: Notification,
@@ -17,7 +18,9 @@ export function useNotificationItem(
       await onMarkAsRead(notification.id);
       setIsRead(true);
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      toast.error("Error", {
+        description: "Failed to mark notification as read",
+      });
     } finally {
       setIsMarking(false);
     }

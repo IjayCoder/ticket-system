@@ -1,14 +1,14 @@
 // hooks/useDevDashboard.ts
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   GetDashbordStats,
   GetMyTickets,
   UpdateStatus,
 } from "@/lib/apiLinks/ticket";
 import { toast } from "sonner";
-import type { Notification, Priority, Status, Ticket, User } from "@/types";
+import type { FilterState, Status, Ticket, User } from "@/types";
 
 export function useDevDashboard(user: User) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -16,10 +16,10 @@ export function useDevDashboard(user: User) {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [stats, setStats] = useState<Record<string, number>>({});
-  const [filters, setFilters] = useState<{
-    status?: Status;
-    priority?: Priority;
-  }>({});
+  const [filters, setFilters] = useState<FilterState>({
+    status: "ALL",
+    priority: "ALL",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -49,7 +49,6 @@ export function useDevDashboard(user: User) {
       const result = await GetDashbordStats();
       setStats(result);
     } catch (err: any) {
-      console.error(err);
       setError(err.message || "Failed to load stats");
     }
   };
@@ -73,7 +72,7 @@ export function useDevDashboard(user: User) {
   };
 
   const handleClearFilters = () => {
-    setFilters({});
+    setFilters({ status: "ALL", priority: "ALL" });
     setPage(1);
   };
 
@@ -92,6 +91,20 @@ export function useDevDashboard(user: User) {
     setDetailsModalOpen(true);
   };
 
+  const filteredTickets = useMemo(() => {
+    return tickets.filter((ticket) => {
+      const matchStatus =
+        !filters.status ||
+        filters.status === "ALL" ||
+        ticket.status === filters.status;
+      const matchPriority =
+        !filters.priority ||
+        filters.priority === "ALL" ||
+        ticket.priority === filters.priority;
+      return matchStatus && matchPriority;
+    });
+  }, [tickets, filters]);
+
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", {
       year: "numeric",
@@ -108,7 +121,7 @@ export function useDevDashboard(user: User) {
   }, []);
 
   return {
-    tickets,
+    tickets: filteredTickets,
     page,
     setPage,
     totalPages,

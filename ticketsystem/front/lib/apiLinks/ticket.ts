@@ -2,18 +2,6 @@ import { Priority, Ticket } from "@/types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-/*let csrfToken: string | null = null;
-
-// Récupère le CSRF token depuis le backend
-export const getCsrfToken = async () => {
-  const res = await fetch(`${API_URL}/api/csrf-token`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Impossible de récupérer le token CSRF");
-  const data = await res.json();
-  csrfToken = data.csrfToken;
-};*/
-
 export const CreateTicket = async (
   title: string,
   description: string,
@@ -22,8 +10,6 @@ export const CreateTicket = async (
   assignedDevId: string,
   clientId: string
 ) => {
-  //if (!csrfToken) await getCsrfToken();
-
   const res = await fetch(`${API_URL}/api/ticket`, {
     method: "POST",
     headers: {
@@ -45,7 +31,6 @@ export const CreateTicket = async (
   }
 
   const data = await res.json();
-  console.log(data);
   return data;
 };
 
@@ -145,7 +130,6 @@ export const UpdateTicket = async ({
   }
 
   const data = await res.json();
-  console.log(data);
   return data.ticket;
 };
 
@@ -194,4 +178,17 @@ export const GetDashbordStats = async () => {
 
   const data = await res.json();
   return data.stats;
+};
+
+export const getFilteredTickets = async (type: "priority" | "status") => {
+  const res = await fetch(`${API_URL}/api/ticket/${type}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error when getting tickets by ${type}`);
+  }
+
+  return await res.json();
 };

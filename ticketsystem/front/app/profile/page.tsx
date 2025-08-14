@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { User } from "@/types";
 import { GetCurrentUser } from "@/lib/apiLinks/user";
 import { HashLoader } from "react-spinners";
+import { toast } from "sonner";
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +22,9 @@ export default function Profile() {
         }
         setUser(data);
       } catch (err) {
-        console.error("Erreur récupération utilisateur", err);
+        toast.error("Error", {
+          description: "Error occurs when getting users",
+        });
         router.push("/login");
       }
     };

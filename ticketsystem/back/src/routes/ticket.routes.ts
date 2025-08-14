@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   createTicket,
   deleteTicket,
+  filterTicketPriority,
+  filterTicketStatus,
   getDashboardStats,
   getMyTickets,
   getTicketById,
@@ -37,6 +39,10 @@ router.put(
   isDevOnly,
   updateTicketStatus
 );
+
+router.get("/priority", protectedRoute, isAdminOnly, filterTicketPriority);
+router.get("/status", protectedRoute, isAdminOnly, filterTicketStatus);
+
 router.delete("/:id", protectedRoute, deleteTicket);
 
 export default router;
