@@ -7,28 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import {
-  Bell,
-  Shield,
-  Palette,
-  Globe,
-  Save,
-  Trash2,
-  AlertTriangle,
-  Moon,
-  Sun,
-  Monitor,
-  LogOut,
-} from "lucide-react";
+
+import { Bell, Save, LogOut } from "lucide-react";
 import type { User } from "@/types";
 import { Logout } from "@/lib/apiLinks/auth";
 import { GetSettings, UpdateSettings } from "@/lib/apiLinks/setting";
@@ -106,32 +86,6 @@ export function SettingsPage({ user }: SettingsPageProps) {
   };
 
   const router = useRouter();
-
-  /*const updateSetting = <
-    K extends keyof Settings,
-    SubK extends keyof Settings[K]
-  >(
-    category: K,
-    key: SubK,
-    value: Settings[K][SubK]
-  ) => {
-    // On ne fait un deep merge que si c'est un sous-objet (comme notifications, appearance, privacy)
-    if (typeof settings[category] === "object" && settings[category] !== null) {
-      setSettings((prev) => ({
-        ...prev,
-        [category]: {
-          ...(prev[category] as Record<string, any>),
-          [key]: value,
-        },
-      }));
-    } else {
-      // Pour les primitives (ex: language, timezone)
-      setSettings((prev) => ({
-        ...prev,
-        [category]: value as any,
-      }));
-    }
-  };*/
 
   const handleLogout = async () => {
     setLoading(true);

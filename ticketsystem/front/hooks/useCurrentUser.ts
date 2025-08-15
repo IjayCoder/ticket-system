@@ -21,9 +21,6 @@ export const useCurrentUser = () => {
         }
         setUser(data);
       } catch (err) {
-        toast.error("Error", {
-          description: "Error occurs when getting users",
-        });
         router.push("/login");
       } finally {
         setLoading(false);

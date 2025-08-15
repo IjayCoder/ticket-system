@@ -22,10 +22,6 @@ export default function DashboardPage() {
         }
         setUser(data);
       } catch (err) {
-        toast.error("Error", {
-          description: "Error occurs when getting users",
-        });
-
         router.push("/login");
       }
     };
